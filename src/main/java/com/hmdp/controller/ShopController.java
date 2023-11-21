@@ -7,6 +7,9 @@ import com.hmdp.dto.Result;
 import com.hmdp.entity.Shop;
 import com.hmdp.service.IShopService;
 import com.hmdp.utils.SystemConstants;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -19,6 +22,7 @@ import javax.annotation.Resource;
  * @author 虎哥
  * @since 2021-12-22
  */
+@Api(tags = "商铺服务")
 @RestController
 @RequestMapping("/shop")
 public class ShopController {
@@ -28,16 +32,19 @@ public class ShopController {
 
     /**
      * 根据id查询商铺信息
+     *
      * @param id 商铺id
      * @return 商铺详情数据
      */
+    @ApiOperation(value = "根据商铺 ID 获取商铺信息")
     @GetMapping("/{id}")
-    public Result queryShopById(@PathVariable("id") Long id) {
-        return Result.ok(shopService.getById(id));
+    public Result queryShopById(@ApiParam(value = "商铺 ID", required = true) @PathVariable("id") Long id) {
+        return shopService.queryById(id);
     }
 
     /**
      * 新增商铺信息
+     *
      * @param shop 商铺数据
      * @return 商铺id
      */
@@ -51,19 +58,20 @@ public class ShopController {
 
     /**
      * 更新商铺信息
+     *
      * @param shop 商铺数据
      * @return 无
      */
     @PutMapping
     public Result updateShop(@RequestBody Shop shop) {
         // 写入数据库
-        shopService.updateById(shop);
-        return Result.ok();
+        return shopService.update(shop);
     }
 
     /**
      * 根据商铺类型分页查询商铺信息
-     * @param typeId 商铺类型
+     *
+     * @param typeId  商铺类型
      * @param current 页码
      * @return 商铺列表
      */
@@ -82,7 +90,8 @@ public class ShopController {
 
     /**
      * 根据商铺名称关键字分页查询商铺信息
-     * @param name 商铺名称关键字
+     *
+     * @param name    商铺名称关键字
      * @param current 页码
      * @return 商铺列表
      */
