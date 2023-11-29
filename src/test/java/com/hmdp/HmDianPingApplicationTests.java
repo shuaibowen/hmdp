@@ -1,6 +1,12 @@
 package com.hmdp;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.lang.UUID;
+import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.Shop;
+import com.hmdp.entity.User;
+import com.hmdp.service.IUserService;
 import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.CacheClient;
 import com.hmdp.utils.RedisConstants;
@@ -9,12 +15,17 @@ import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static com.hmdp.utils.RedisConstants.LOGIN_USER_KEY;
 
 @SpringBootTest
 class HmDianPingApplicationTests {
@@ -30,6 +41,12 @@ class HmDianPingApplicationTests {
 
     @Resource
     private RedissonClient redissonClient;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private IUserService userService;
 
     private ExecutorService es = Executors.newFixedThreadPool(500);
 
@@ -80,6 +97,30 @@ class HmDianPingApplicationTests {
             } finally {
                 lock.unlock();
             }
+        }
+    }
+
+    @Test
+    void testTokens() {
+        String token;
+        Long i = 1L;
+        Map<String, Object> userMap;
+        while (i <= 1001) {
+            // 生成token，不带-
+            token = UUID.randomUUID().toString(true);
+            User user = userService.getById(i);
+            if (user == null ){
+                i++;
+                continue;
+            }
+            UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+            userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(),
+                    CopyOptions.create().setIgnoreNullValue(true)
+                            .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString())
+            );
+            stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, userMap);
+            System.out.println(token);
+            i++;
         }
     }
 
