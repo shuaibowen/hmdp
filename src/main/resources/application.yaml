@@ -24,4 +24,8 @@ mybatis-plus:
   type-aliases-package: com.hmdp.entity # 别名扫描包
 logging:
   level:
-    com.hmdp: debug
+    com.hmdp.controller: DEBUG
+    com.hmdp.service: Info
+  pattern:
+    console: "%d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger - %msg%n"
+    file: "%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger - %msg%n"
